@@ -1,5 +1,5 @@
 import { MiddlewareHandler } from 'hono'
-import { verify } from 'hono/jwt'
+import { jwtVerify } from 'jose'
 
 type Bindings = {
   JWT_SECRET: string
@@ -15,7 +15,8 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Bindings }> = async (
   const token = authHeader.split(' ')[1]
 
   try {
-    const payload = await verify(token, c.env.JWT_SECRET)
+    const key = new TextEncoder().encode(c.env.JWT_SECRET)
+    const { payload } = await jwtVerify(token, key)
     c.set('user', payload)
     await next()
   } catch (e) {

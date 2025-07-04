@@ -57,7 +57,7 @@
       const data = await res.json();
       if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
-        location.href = '/static/logs.html';
+        location.href = '/logs.html';
       } else {
         alertBox.className = 'alert alert-danger';
         alertBox.textContent = data.message || '登入失敗，請重試';
