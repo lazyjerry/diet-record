@@ -10,15 +10,50 @@
   </head>
   <body class="bg-light">
     <div class="py-4 px-3 container">
-      <h2>📊 飲食統計圖表</h2>
-      <div class="mb-3">
-        <select class="form-select w-auto d-inline-block" id="rangeSelector">
-          <option value="7days">近七日</option>
-          <option value="month">本月</option>
-        </select>
-        <a class="btn btn-outline-primary float-end" href="logs.html">🔙 回紀錄頁</a>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <h2 class="mb-0 me-3">📊 飲食統計圖表</h2>
+        <a class="btn btn-outline-primary" href="logs.html">🔙 回紀錄頁</a>
       </div>
-      <canvas id="chart" height="150"></canvas>
+      <div class="row align-items-end mb-4">
+        <div class="col-auto">
+          <label for="rangeSelector" class="form-label">快速範圍</label>
+          <select class="form-select" id="rangeSelector">
+            <option value="today">今天</option>
+            <option value="yesterday">昨天</option>
+            <option value="7days">近七日</option>
+            <option value="30days">近 30 天</option>
+            <option value="thisMonth">本月</option>
+            <option value="lastMonth">上月</option>
+            <option value="custom">自訂</option>
+          </select>
+        </div>
+        <div class="col-auto d-none" id="customDateRange">
+          <label class="form-label">自訂日期</label>
+          <div class="d-flex gap-2">
+            <input type="date" class="form-control" id="startDate">
+            <input type="date" class="form-control" id="endDate">
+          </div>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-primary mt-2 mt-md-0" id="applyBtn">📈 顯示</button>
+        </div>
+      </div>
+
+      <!-- 圖表區塊 -->
+      <div class="row g-4">
+        <div class="col-12">
+          <canvas id="summaryChart" height="200"></canvas>
+        </div>
+        <div class="col-md-6">
+          <canvas id="categoryChart" height="200"></canvas>
+        </div>
+        <div class="col-md-6">
+          <canvas id="macroChart" height="200"></canvas>
+        </div>
+        <div class="col-md-12">
+          <canvas id="comparisonChart" height="200"></canvas>
+        </div>
+      </div>
     </div>
     <script src="/js/report.js" type="module"></script>
   </body>
