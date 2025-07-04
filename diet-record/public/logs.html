@@ -20,65 +20,128 @@
 
   <div class="container py-4 px-3">
     <h2 class="mb-4">📝 飲食紀錄表單</h2>
-
-    <form id="logForm" class="mb-5">
-      <div class="row g-3">
-        <div class="col-12 col-md-3">
-          <label class="form-label">日期</label>
-          <input type="date" class="form-control" id="log_date" required>
-        </div>
-        <div class="col-12 col-md-3">
-          <label class="form-label">時間／時段</label>
-          <input type="text" class="form-control" id="log_time" placeholder="早餐、午餐、08:00…">
-        </div>
-        <div class="col-12 col-md-6">
-          <label class="form-label">描述</label>
-          <input type="text" class="form-control" id="description">
-        </div>
-
-        <div class="col-6 col-md-2">
-          <label class="form-label">全穀雜糧</label>
-          <input type="number" step="0.1" min="0" class="form-control" id="grains" value="0">
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label">豆魚蛋肉</label>
-          <input type="number" step="0.1" min="0" class="form-control" id="protein" value="0">
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label">蔬菜</label>
-          <input type="number" step="0.1" min="0" class="form-control" id="vegetables" value="0">
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label">水果</label>
-          <input type="number" step="0.1" min="0" class="form-control" id="fruits" value="0">
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label">乳品</label>
-          <input type="number" step="0.1" min="0" class="form-control" id="dairy" value="0">
-        </div>
-        <div class="col-6 col-md-2">
-          <label class="form-label">油脂／堅果</label>
-          <input type="number" step="0.1" min="0" class="form-control" id="fats" value="0">
-        </div>
-        <input type="hidden" id="source" value="手動輸入">
-
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary">送出紀錄</button>
-          <a href="report.html" class="btn btn-outline-secondary float-end">📊 查看分析</a>
-        </div>
+    <!-- 搜尋表單 -->
+    <form id="searchForm" class="row g-2 mb-3 align-items-end">
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label">起始日期</label>
+        <input type="date" id="searchStart" class="form-control">
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label">結束日期</label>
+        <input type="date" id="searchEnd" class="form-control">
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <label class="form-label">時段／關鍵字</label>
+        <input type="text" id="searchKeyword" class="form-control" placeholder="早餐、午餐、描述…">
+      </div>
+      <div class="col-md-3 d-grid">
+        <button type="submit" class="btn btn-outline-primary">🔍 搜尋</button>
       </div>
     </form>
 
-    <h3 class="mt-5 mb-3">📋 歷史紀錄</h3>
-    <div id="logsList" class="table-responsive">
+    <div class="row g-2 align-items-center mb-3">
+      <div class="col-md">
+        <button class="btn btn-success w-100 w-md-auto fw-bold" onclick="openLogModal()">➕ 新增紀錄</button>
+      </div>
+    </div>
+    <div class="text-end mb-4">
+      <a href="report.html" class="btn btn-outline-secondary">📊 查看統計</a>
+    </div>
+    <div id="logsList" class="table-responsive table-responsive-sm">
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>日期</th><th>時段</th><th>描述</th><th>六大類</th><th>熱量</th><th>操作</th>
+            <th>日期</th>
+            <th>時段</th>
+            <th style="min-width: 200px">描述</th>
+            <th>全穀</th>
+            <th>蛋白</th>
+            <th>蔬菜</th>
+            <th>水果</th>
+            <th>乳品</th>
+            <th>油脂</th>
+            <th>熱量</th>
+            <th>蛋白質</th>
+            <th>碳水</th>
+            <th>脂肪</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody id="logsBody"></tbody>
       </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-3" id="paginationControls">
+      <button id="prevPageBtn" class="btn btn-outline-secondary btn-sm">← 上一頁</button>
+      <span id="pageIndicator">目前顯示日期</span>
+      <button id="nextPageBtn" class="btn btn-outline-secondary btn-sm">下一頁 →</button>
+    </div>
+  </div>
+
+  <!-- Modal: 新增／編輯紀錄 -->
+  <div class="modal fade" id="logModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="logForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="logModalTitle">新增紀錄</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12 col-md-3">
+                <label class="form-label">日期</label>
+                <input type="date" class="form-control" id="log_date" required>
+              </div>
+              <div class="col-12 col-md-3">
+                <label class="form-label">時間／時段</label>
+                <input type="text" class="form-control" id="log_time" placeholder="早餐、午餐、08:00…">
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">描述</label>
+                <input type="text" class="form-control" id="description">
+              </div>
+
+              <div class="col-6 col-md-2">
+                <label class="form-label">全穀雜糧（份）</label>
+                <input type="number" step="0.5" min="0" class="form-control" id="grains" value="0">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">豆魚蛋肉（份）</label>
+                <input type="number" step="0.5" min="0" class="form-control" id="protein" value="0">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">蔬菜（份）</label>
+                <input type="number" step="0.5" min="0" class="form-control" id="vegetables" value="0">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">水果（份）</label>
+                <input type="number" step="0.5" min="0" class="form-control" id="fruits" value="0">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">乳品（份）</label>
+                <input type="number" step="0.5" min="0" class="form-control" id="dairy" value="0">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label">油脂/堅果（份）</label>
+                <input type="number" step="0.5" min="0" class="form-control" id="fats" value="0">
+              </div>
+              <input type="hidden" id="source" value="手動輸入">
+            </div>
+
+            <!-- 營養估算顯示 -->
+            <div class="mt-3 alert alert-info" id="calcResult">
+              🔢 營養估算：
+              熱量 <strong id="calories">0</strong> kcal，
+              碳水 <strong id="carbs">0</strong> g，
+              蛋白質 <strong id="proteins">0</strong> g，
+              脂肪 <strong id="fats_total">0</strong> g
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">💾 儲存</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -110,6 +173,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="/js/logs.js" type="module"></script>
+  <!-- 替換掉原本的 logs.js -->
+  <script type="module" src="/js/main.js"></script>
 </body>
 </html>
