@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import bcrypt from 'bcryptjs'
 import { SignJWT } from 'jose'
+import { authMiddleware } from '../middleware/auth'
 
 type Bindings = {
   DB: D1Database
@@ -18,6 +19,29 @@ async function createJwt(payload: object, secret: string): Promise<string> {
     .setExpirationTime('7d')
     .sign(key)
 }
+
+auth.put('/api/user', authMiddleware, async (c) => {
+  const { id } = c.get('user')
+  const { name, password } = await c.req.json()
+  if (!name) return c.json({ message: '名稱為必填' }, 400)
+
+  const db = c.env.DB
+  if (password) {
+    const hash = await bcrypt.hash(password, 10)
+    await db.prepare('UPDATE users SET name=?, password=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+      .bind(name, hash, id).run()
+  } else {
+    await db.prepare('UPDATE users SET name=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
+      .bind(name, id).run()
+  }
+
+  return c.json({ message: 'ok' })
+})
+
+auth.get('/api/user-count', async (c) => {
+  const result = await c.env.DB.prepare('SELECT COUNT(*) as count FROM users').first()
+  return c.json({ count: result.count })
+})
 
 auth.post('/api/login', async (c) => {
   const { username, password, name } = await c.req.json()
