@@ -7,13 +7,15 @@ import { loadLogs, bindLogTableActions, bindSearchForm, bindPaginationControls }
 document.addEventListener('DOMContentLoaded', () => {
   showUserName()
 
-  // ✅ 確保 log_date 存在後再設定
-  const logDateInput = document.getElementById('log_date')
-  if (logDateInput) {
-    logDateInput.value = new Date().toISOString().slice(0, 10)
+  function setTodayDate(inputId) {
+    const input = document.getElementById(inputId)
+    if (input) input.value = new Date().toISOString().split('T')[0]
   }
 
-  bindNutritionEvents()
+  setTodayDate('log_date')
+  
+
+  bindNutritionEvents() 
   calcNutrition()
 
   // 頁面初始化
