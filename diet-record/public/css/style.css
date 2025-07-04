@@ -21,3 +21,15 @@ table td, table th {
   padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
 }
+
+.table-date{
+  min-width: 120px;
+}
+
+.table-two{
+  min-width: 80px;
+}
+
+.table-three{
+  min-width: 100px;
+}
