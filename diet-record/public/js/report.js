@@ -12,7 +12,7 @@ function destroyCharts() {
   categoryLineChart?.destroy()
 }
 
-async function loadStats(range = '7days', start = '', end = '') {
+async function loadStats(range = 'today', start = '', end = '') {
   const url = new URL('/api/stats', location.origin)
   url.searchParams.set('range', range)
   if (start) url.searchParams.set('start', start)
@@ -23,6 +23,18 @@ async function loadStats(range = '7days', start = '', end = '') {
   })
 
   const data = await res.json()
+  // 檢查是否有資料
+  if (!data || data.length === 0) {
+    const msg = document.createElement('div')
+    msg.className = 'alert alert-warning position-fixed top-0 start-50 translate-middle-x mt-3 shadow'
+    msg.style.zIndex = '9999'
+    msg.style.minWidth = '300px'
+    msg.innerHTML = '⚠️ 沒有符合條件的紀錄資料'
+    document.body.appendChild(msg)
+    setTimeout(() => msg.remove(), 3000)
+    destroyCharts()
+    return
+  }
   const isTimeDetailed = range === 'today' || range === 'yesterday'
   const labels = data.map(d => isTimeDetailed ? `${d.log_date} ${d.log_time || ''}` : d.log_date)
 
@@ -36,25 +48,25 @@ async function loadStats(range = '7days', start = '', end = '') {
       labels,
       datasets: [
         {
-          label: '熱量 (kcal)',
+          label: '熱量 (千卡)',
           data: data.map(d => d.calories),
           borderColor: '#dc3545',
           tension: 0.3
         },
         {
-          label: '碳水 (g)',
+          label: '碳水 (克)',
           data: data.map(d => d.carbs),
           borderColor: '#0d6efd',
           tension: 0.3
         },
         {
-          label: '蛋白質 (g)',
+          label: '蛋白質 (克)',
           data: data.map(d => d.proteins),
           borderColor: '#198754',
           tension: 0.3
         },
         {
-          label: '脂肪 (g)',
+          label: '脂肪 (克)',
           data: data.map(d => d.fats_total),
           borderColor: '#fd7e14',
           tension: 0.3
@@ -66,7 +78,7 @@ async function loadStats(range = '7days', start = '', end = '') {
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'nearest' } },
       scales: {
-        y: { beginAtZero: true, title: { display: true, text: 'g / kcal' } },
+        y: { beginAtZero: true, title: { display: true, text: '克 / 千卡' } },
         x: { title: { display: true, text: '日期' } }
       }
     }
@@ -215,7 +227,7 @@ async function loadStats(range = '7days', start = '', end = '') {
     ]
     const unitMap = {
       grains: '份', protein: '份', vegetables: '份', fruits: '份', dairy: '份', fats: '份',
-      carbs: 'g', proteins: 'g', fats_total: 'g', calories: 'kcal'
+      carbs: '克', proteins: '克', fats_total: '克', calories: '千卡'
     }
 
     const [group1Body, group2Body] = statsTable.querySelectorAll('tbody')
@@ -236,12 +248,25 @@ async function loadStats(range = '7days', start = '', end = '') {
       group2Body.insertAdjacentHTML('beforeend', `
         <tr>
           <td class="px-3 py-2">${names[key]}</td>
-          <td class="px-3 py-2">${totalVal.toFixed(1)}${unitMap[key]}</td>
-          <td class="px-3 py-2">${avgVal.toFixed(1)}${unitMap[key]}</td>
+          <td class="px-3 py-2">${totalVal.toFixed(1)} ${unitMap[key]}</td>
+          <td class="px-3 py-2">${avgVal.toFixed(1)} ${unitMap[key]}</td>
         </tr>
       `)
     })
   }
+
+  // 6. 根據 isTimeDetailed 調整圖表排版
+  const chartCols = document.querySelectorAll('.row.g-4 > div[class*="col-"]')
+  chartCols.forEach((col, idx) => {
+    col.classList.remove('col-md-4', 'col-md-6', 'd-none')
+    if (isTimeDetailed) {
+      // 僅顯示前 3 張圖，並排顯示
+      if (idx < 3) col.classList.add('col-md-4')
+      else col.classList.add('d-none')
+    } else {
+      col.classList.add('col-md-6')
+    }
+  })
 }
 
 // UI 控制邏輯

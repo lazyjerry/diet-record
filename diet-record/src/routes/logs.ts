@@ -32,7 +32,7 @@ logs.get('/api/logs', authMiddleware, async (c) => {
   }
 
   if (!start && !end) {
-    conditions.push('log_date >= date("now", "-3 days")')
+    conditions.push('log_date >= date("now", "-3 days", "localtime")')
   }
 
   const whereSQL = `WHERE ${conditions.join(' AND ')}`
@@ -109,8 +109,8 @@ logs.post('/api/logs', authMiddleware, async (c) => {
     INSERT INTO food_logs (
       user_id, log_date, log_time, description, source,
       grains, protein, vegetables, fruits, dairy, fats,
-      calories, carbs, proteins, fats_total
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      calories, carbs, proteins, fats_total, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '+8 hours'))
   `).bind(
     user.id, log_date, log_time, description, source,
     grains, protein, vegetables, fruits, dairy, fats,
@@ -143,7 +143,7 @@ logs.put('/api/logs/:id', authMiddleware, async (c) => {
     UPDATE food_logs SET
       log_date=?, log_time=?, description=?, source=?,
       grains=?, protein=?, vegetables=?, fruits=?, dairy=?, fats=?,
-      calories=?, carbs=?, proteins=?, fats_total=?, updated_at=CURRENT_TIMESTAMP
+      calories=?, carbs=?, proteins=?, fats_total=?, updated_at=datetime('now', '+8 hours')
     WHERE id=? AND user_id=?
   `).bind(
     log_date, log_time, description, source,

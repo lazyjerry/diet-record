@@ -19,15 +19,13 @@ stats.get('/api/stats', authMiddleware, async (c) => {
     const binds: any[] = [user.id]
 
     if (range === 'today') {
-      conditions.push(`log_date = date('now')`)
+      conditions.push(`log_date = date('now', '+8 hours')`)
     } else if (range === 'yesterday') {
-      conditions.push(`log_date = date('now', '-1 day')`)
+      conditions.push(`log_date = date('now', '-1 day', '+8 hours')`)
     } else if (range === '7days') {
-      conditions.push(`log_date >= date('now', '-6 days')`)
+      conditions.push(`log_date >= date('now', '-6 days', '+8 hours')`)
     } else if (range === '30days') {
-      conditions.push(`log_date >= date('now', '-29 days')`)
-    } else if (range === 'month') {
-      conditions.push(`strftime('%Y-%m', log_date) = strftime('%Y-%m', 'now')`)
+      conditions.push(`log_date >= date('now', '-29 days', '+8 hours')`)
     } else if (range === 'custom') {
       if (start) {
         conditions.push('log_date >= ?')
@@ -38,9 +36,9 @@ stats.get('/api/stats', authMiddleware, async (c) => {
         binds.push(end)
       }
     } else if (range === 'compare_7days') {
-      conditions.push(`log_date BETWEEN date('now', '-13 days') AND date('now', '-7 days')`)
+      conditions.push(`log_date BETWEEN date('now', '-13 days', '+8 hours') AND date('now', '-7 days', '+8 hours')`)
     } else if (range === 'compare_30days') {
-      conditions.push(`log_date BETWEEN date('now', '-59 days') AND date('now', '-30 days')`)
+      conditions.push(`log_date BETWEEN date('now', '-59 days', '+8 hours') AND date('now', '-30 days', '+8 hours')`)
     }
 
     const sql = `
