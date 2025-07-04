@@ -9,12 +9,17 @@ const modalTitle = document.getElementById('logModalTitle')
 
 let editLogId = null
 
+function setTodayDate(inputId) {
+    const input = document.getElementById(inputId)
+    input.value = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
+  }
+
 // 開啟 modal：新增模式
 export function openLogModal() {
   modalTitle.textContent = '➕ 新增紀錄'
   editLogId = null
   form.reset()
-  document.getElementById('log_date').value = new Date().toISOString().slice(0, 10)
+  setTodayDate('log_date')
   calcNutrition()
   modal.show()
 }

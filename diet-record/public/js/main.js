@@ -6,15 +6,7 @@ import { loadLogs, bindLogTableActions, bindSearchForm, bindPaginationControls }
 
 document.addEventListener('DOMContentLoaded', () => {
   showUserName()
-
-  function setTodayDate(inputId) {
-    const input = document.getElementById(inputId)
-    if (input) input.value = new Date().toISOString().split('T')[0]
-  }
-
-  setTodayDate('log_date')
   
-
   bindNutritionEvents() 
   calcNutrition()
 
