@@ -13,13 +13,16 @@ export const auth = new Hono<{ Bindings: Bindings }>();
 // JWT 建立函式（使用 HS256 + 7d 有效期）
 async function createJwt(payload: object, secret: string): Promise<string> {
 	// 請幫我判斷 secret 有多少字元，產生該字元數量的隨機英文數字符號作為 prefix
-	const prefix = Array.from({ length: secret.length }, () => String.fromCharCode(Math.floor(Math.random() * 26) + 65)).join("");
-	const salted = `${prefix}${btoa(rawToken)}`;
-	return salted;
+	// const prefix = Array.from({ length: secret.length }, () => String.fromCharCode(Math.floor(Math.random() * 26) + 65)).join("");
+	// const salted = `${btoa(JSON.stringify(payload))}`;
+	// console.log("prefix:", prefix);
+	// console.log("salted:", salted);
+	const key = new TextEncoder().encode(secret);
+	return await new SignJWT(payload).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("7d").sign(key);
 }
 
 // 新增 JWT 驗證 API
-auth.get("/api/verify", authMiddleware, async (c) => {
+auth.post("/api/verify", authMiddleware, async (c) => {
 	const payload = c.get("user");
 
 	// 驗證 UA 是否一致（可視情況保留或省略）

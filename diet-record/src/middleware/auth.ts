@@ -17,13 +17,18 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Bindings }> = async (
 	try {
 		// 把 encodedJwt 去掉加鹽。加鹽規則是： token 前面有 c.env.JWT_SECRET 字元數量的隨機英文數字符號
 		// 這樣可以避免 token 被暴力破解
-		const saltLength = c.env.JWT_SECRET.length;
-		const encodedJwt = token.slice(saltLength);
-		const rawToken = atob(encodedJwt);
-		const payload = await verify(rawToken, c.env.JWT_SECRET);
+		// const saltLength = c.env.JWT_SECRET.length;
+		// const encodedJwt = token.slice(saltLength);
+		// console.log("saltLength:", saltLength);
+		// console.log("encodedJwt:", encodedJwt);
+		// const rawToken = encodedJwt;
+		// console.log("rawToken:", rawToken);
+		// const payload = await verify(rawToken, c.env.JWT_SECRET);
+		const payload = await verify(token, c.env.JWT_SECRET);
+		// console.log("payload:", payload);
 		c.set("user", payload);
 		await next();
 	} catch (e) {
-		return c.json({ message: "無效或過期的 token" }, 401);
+		return c.json({ message: "無效或過期的 token" }, 403);
 	}
 };
