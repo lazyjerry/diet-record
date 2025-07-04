@@ -19,33 +19,40 @@
   </div>
 
   <div class="container py-4 px-3">
-    <h2 class="mb-4">📝 飲食紀錄表單</h2>
-    <!-- 搜尋表單 -->
-    <form id="searchForm" class="row g-2 mb-3 align-items-end">
-      <div class="col-sm-4 col-md-3">
-        <label class="form-label">起始日期</label>
-        <input type="date" id="searchStart" class="form-control">
-      </div>
-      <div class="col-sm-4 col-md-3">
-        <label class="form-label">結束日期</label>
-        <input type="date" id="searchEnd" class="form-control">
-      </div>
-      <div class="col-sm-4 col-md-3">
-        <label class="form-label">時段／關鍵字</label>
-        <input type="text" id="searchKeyword" class="form-control" placeholder="早餐、午餐、描述…">
-      </div>
-      <div class="col-md-3 d-grid">
-        <button type="submit" class="btn btn-outline-primary">🔍 搜尋</button>
-      </div>
-    </form>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <h2 class="mb-0">📝 飲食紀錄表單</h2>
+      <a href="report.html" class="btn btn-outline-secondary">📊 查看統計</a>
+    </div>
+    <!-- 搜尋表單收合控制 -->
+    <div class="mb-3">
+      <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#searchCollapse" aria-expanded="false" aria-controls="searchCollapse">
+        🔍 展開搜尋
+      </button>
+    </div>
+    <div id="searchCollapse" class="collapse">
+      <form id="searchForm" class="row g-2 mb-3 align-items-end">
+        <div class="col-sm-4 col-md-3">
+          <label class="form-label">起始日期</label>
+          <input type="date" id="searchStart" class="form-control">
+        </div>
+        <div class="col-sm-4 col-md-3">
+          <label class="form-label">結束日期</label>
+          <input type="date" id="searchEnd" class="form-control">
+        </div>
+        <div class="col-sm-4 col-md-3">
+          <label class="form-label">時段／關鍵字</label>
+          <input type="text" id="searchKeyword" class="form-control" placeholder="早餐、午餐、描述…">
+        </div>
+        <div class="col-md-3 d-grid">
+          <button type="submit" class="btn btn-outline-primary">🔍 搜尋</button>
+        </div>
+      </form>
+    </div>
 
     <div class="row g-2 align-items-center mb-3">
       <div class="col-md">
-        <button class="btn btn-success w-100 w-md-auto fw-bold" onclick="openLogModal()">➕ 新增紀錄</button>
+        <button class="btn btn-success w-100 w-md-auto fw-bold py-3" onclick="openLogModal()">➕ 新增紀錄</button>
       </div>
-    </div>
-    <div class="text-end mb-4">
-      <a href="report.html" class="btn btn-outline-secondary">📊 查看統計</a>
     </div>
     <div id="logsList" class="table-responsive table-responsive-sm">
       <table class="table table-striped">
