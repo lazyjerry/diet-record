@@ -160,7 +160,11 @@ async function loadStats(range = '7days', start = '', end = '') {
   })
 
   // 4. 比較區間（只有 2 筆以上資料才畫）
-  if (data.length >= 2) {
+  const compContainer = document.getElementById('comparisonChart')?.closest('.col-md-12')
+  if (compContainer) {
+    compContainer.style.display = isTimeDetailed ? 'none' : ''
+  }
+  if (data.length >= 2 && !isTimeDetailed) {
     const first = data[0]
     const last = data[data.length - 1]
     const compCtx = document.getElementById('comparisonChart').getContext('2d')
@@ -186,6 +190,56 @@ async function loadStats(range = '7days', start = '', end = '') {
         plugins: { legend: { position: 'bottom' } },
         scales: { y: { beginAtZero: true } }
       }
+    })
+  }
+
+  // 5. 統計表格內容
+  const statsTable = document.getElementById('statsTable')
+  if (statsTable) {
+    const nutrients = ['grains', 'protein', 'vegetables', 'fruits', 'dairy', 'fats', 'carbs', 'proteins', 'fats_total', 'calories']
+    const names = {
+      grains: '全穀',
+      protein: '豆魚蛋肉',
+      vegetables: '蔬菜',
+      fruits: '水果',
+      dairy: '乳品',
+      fats: '油脂',
+      carbs: '碳水化合物',
+      proteins: '蛋白質',
+      fats_total: '脂肪',
+      calories: '熱量'
+    }
+    const grouped = [
+      ['grains', 'protein', 'vegetables', 'fruits', 'dairy', 'fats'],
+      ['carbs', 'proteins', 'fats_total', 'calories']
+    ]
+    const unitMap = {
+      grains: '份', protein: '份', vegetables: '份', fruits: '份', dairy: '份', fats: '份',
+      carbs: 'g', proteins: 'g', fats_total: 'g', calories: 'kcal'
+    }
+
+    const [group1Body, group2Body] = statsTable.querySelectorAll('tbody')
+    grouped[0].forEach(key => {
+      const totalVal = data.reduce((sum, d) => sum + (d[key] || 0), 0)
+      const avgVal = totalVal / (data.length || 1)
+      group1Body.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td class="px-3 py-2">${names[key]}</td>
+          <td class="px-3 py-2">${totalVal.toFixed(1)}${unitMap[key]}</td>
+          <td class="px-3 py-2">${avgVal.toFixed(1)}${unitMap[key]}</td>
+        </tr>
+      `)
+    })
+    grouped[1].forEach(key => {
+      const totalVal = data.reduce((sum, d) => sum + (d[key] || 0), 0)
+      const avgVal = totalVal / (data.length || 1)
+      group2Body.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td class="px-3 py-2">${names[key]}</td>
+          <td class="px-3 py-2">${totalVal.toFixed(1)}${unitMap[key]}</td>
+          <td class="px-3 py-2">${avgVal.toFixed(1)}${unitMap[key]}</td>
+        </tr>
+      `)
     })
   }
 }
