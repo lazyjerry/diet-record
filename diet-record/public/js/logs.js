@@ -19,21 +19,45 @@ function openUserModal() {
   new bootstrap.Modal(document.getElementById('userModal')).show()
 }
 
-// 📝 表單送出：新增或更新紀錄
+// 即時計算營養欄位
+const nutrientFields = ["grains", "protein", "vegetables", "fruits", "dairy", "fats"]
+const calcFields = {
+  calories: document.getElementById('calories'),
+  carbs: document.getElementById('carbs'),
+  proteins: document.getElementById('proteins'),
+  fats_total: document.getElementById('fats_total'),
+}
+function calcNutrition() {
+  const g = (id) => parseFloat(document.getElementById(id).value || 0)
+  const grains = g('grains'), protein = g('protein'), vegetables = g('vegetables')
+  const fruits = g('fruits'), dairy = g('dairy'), fats = g('fats')
+
+  const calories = grains * 70 + protein * 75 + vegetables * 25 + fruits * 60 + dairy * 85 + fats * 45
+  const carbs = grains * 15 + vegetables * 5 + fruits * 15 + dairy * 12
+  const proteins = grains * 2 + protein * 7 + vegetables * 1 + dairy * 8
+  const fats_total = protein * 5 + fats * 5
+
+  calcFields.calories.textContent = Math.round(calories)
+  calcFields.carbs.textContent = Math.round(carbs)
+  calcFields.proteins.textContent = Math.round(proteins)
+  calcFields.fats_total.textContent = Math.round(fats_total)
+}
+nutrientFields.forEach(id => {
+  document.getElementById(id).addEventListener('input', calcNutrition)
+})
+
+// 表單送出（新增）
 form.addEventListener('submit', async (e) => {
   e.preventDefault()
-  const payload = {
+  const payload = nutrientFields.reduce((acc, id) => {
+    acc[id] = parseFloat(document.getElementById(id).value || 0)
+    return acc
+  }, {
     log_date: document.getElementById('log_date').value,
     log_time: document.getElementById('log_time').value,
     description: document.getElementById('description').value,
-    grains: parseFloat(document.getElementById('grains').value || '0'),
-    protein: parseFloat(document.getElementById('protein').value || '0'),
-    vegetables: parseFloat(document.getElementById('vegetables').value || '0'),
-    fruits: parseFloat(document.getElementById('fruits').value || '0'),
-    dairy: parseFloat(document.getElementById('dairy').value || '0'),
-    fats: parseFloat(document.getElementById('fats').value || '0'),
     source: '手動輸入',
-  }
+  })
 
   const res = await fetch('/api/logs', {
     method: 'POST',
@@ -47,13 +71,14 @@ form.addEventListener('submit', async (e) => {
   if (res.ok) {
     form.reset()
     document.getElementById('log_date').value = new Date().toISOString().slice(0, 10)
+    calcNutrition()
     loadLogs()
   } else {
     alert('紀錄失敗')
   }
 })
 
-// 🔁 載入紀錄
+// 載入紀錄
 async function loadLogs() {
   const res = await fetch('/api/logs', {
     headers: { 'Authorization': `Bearer ${token}` }
@@ -67,11 +92,16 @@ async function loadLogs() {
         <td>${log.log_date}</td>
         <td>${log.log_time || ''}</td>
         <td>${log.description || ''}</td>
-        <td>
-          穀${log.grains}、蛋${log.protein}、菜${log.vegetables}<br>
-          果${log.fruits}、乳${log.dairy}、脂${log.fats}
-        </td>
-        <td>${Math.round(log.calories)} kcal</td>
+        <td>${log.grains}</td>
+        <td>${log.protein}</td>
+        <td>${log.vegetables}</td>
+        <td>${log.fruits}</td>
+        <td>${log.dairy}</td>
+        <td>${log.fats}</td>
+        <td>${Math.round(log.calories)}</td>
+        <td>${Math.round(log.proteins)}</td>
+        <td>${Math.round(log.carbs)}</td>
+        <td>${Math.round(log.fats_total)}</td>
         <td>
           <button class="btn btn-sm btn-outline-secondary btn-edit">編輯</button>
           <button class="btn btn-sm btn-outline-danger btn-delete">刪除</button>
@@ -82,7 +112,7 @@ async function loadLogs() {
   })
 }
 
-// 🧽 點擊操作（編輯／刪除）
+// 點擊操作（刪除／編輯）
 body.addEventListener('click', async (e) => {
   const row = e.target.closest('tr')
   const id = row?.dataset.id
@@ -105,30 +135,22 @@ body.addEventListener('click', async (e) => {
     document.getElementById('log_time').value = cells[1].textContent
     document.getElementById('description').value = cells[2].textContent
 
-    const match = cells[3].textContent.match(/穀(\d+\.?\d*)、蛋(\d+\.?\d*)、菜(\d+\.?\d*)果(\d+\.?\d*)、乳(\d+\.?\d*)、脂(\d+\.?\d*)/)
-    if (match) {
-      document.getElementById('grains').value = match[1]
-      document.getElementById('protein').value = match[2]
-      document.getElementById('vegetables').value = match[3]
-      document.getElementById('fruits').value = match[4]
-      document.getElementById('dairy').value = match[5]
-      document.getElementById('fats').value = match[6]
-    }
+    nutrientFields.forEach((id, i) => {
+      document.getElementById(id).value = cells[i + 3].textContent
+    })
+    calcNutrition()
 
     form.onsubmit = async (evt) => {
       evt.preventDefault()
-      const payload = {
+      const payload = nutrientFields.reduce((acc, id) => {
+        acc[id] = parseFloat(document.getElementById(id).value || 0)
+        return acc
+      }, {
         log_date: document.getElementById('log_date').value,
         log_time: document.getElementById('log_time').value,
         description: document.getElementById('description').value,
-        grains: parseFloat(document.getElementById('grains').value || '0'),
-        protein: parseFloat(document.getElementById('protein').value || '0'),
-        vegetables: parseFloat(document.getElementById('vegetables').value || '0'),
-        fruits: parseFloat(document.getElementById('fruits').value || '0'),
-        dairy: parseFloat(document.getElementById('dairy').value || '0'),
-        fats: parseFloat(document.getElementById('fats').value || '0'),
         source: '手動編輯',
-      }
+      })
 
       const res = await fetch(`/api/logs/${id}`, {
         method: 'PUT',
@@ -143,6 +165,7 @@ body.addEventListener('click', async (e) => {
         form.reset()
         form.onsubmit = defaultSubmitHandler
         document.getElementById('log_date').value = new Date().toISOString().slice(0, 10)
+        calcNutrition()
         loadLogs()
       } else {
         alert('更新失敗')
@@ -151,7 +174,7 @@ body.addEventListener('click', async (e) => {
   }
 })
 
-// 👤 帳號資料更新
+// 編輯個人資料
 document.getElementById('userForm').addEventListener('submit', async (e) => {
   e.preventDefault()
   const name = document.getElementById('newName').value.trim()
@@ -174,6 +197,8 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
   }
 })
 
+// 初始化
 const defaultSubmitHandler = form.onsubmit
 document.getElementById('log_date').value = new Date().toISOString().slice(0, 10)
+calcNutrition()
 loadLogs()

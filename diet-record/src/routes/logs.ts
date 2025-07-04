@@ -8,17 +8,58 @@ type Bindings = {
 
 export const logs = new Hono<{ Bindings: Bindings }>()
 
-// ✅ 查詢歷史紀錄（可加 date 篩選）
+// ✅ 查詢歷史紀錄（支援日期區間、關鍵字、分頁，預設近三天）
 logs.get('/api/logs', authMiddleware, async (c) => {
   const user = c.get('user')
-  const { date } = c.req.query()
+  const { start, end, keyword, page = '1', limit = '10' } = c.req.query()
 
-  const sql = date
-    ? 'SELECT * FROM food_logs WHERE user_id = ? AND log_date = ? ORDER BY id DESC'
-    : 'SELECT * FROM food_logs WHERE user_id = ? ORDER BY log_date DESC, log_time DESC'
+  const conditions: string[] = ['user_id = ?']
+  const binds: any[] = [user.id]
 
-  const result = await c.env.DB.prepare(sql).bind(user.id, ...(date ? [date] : [])).all()
-  return c.json(result.results)
+  if (start) {
+    conditions.push('log_date >= ?')
+    binds.push(start)
+  }
+
+  if (end) {
+    conditions.push('log_date <= ?')
+    binds.push(end)
+  }
+
+  if (keyword) {
+    conditions.push('(log_time LIKE ? OR description LIKE ?)')
+    binds.push(`%${keyword}%`, `%${keyword}%`)
+  }
+
+  if (!start && !end) {
+    conditions.push('log_date >= date("now", "-3 days")')
+  }
+
+  const whereSQL = `WHERE ${conditions.join(' AND ')}`
+
+  // 分頁處理
+  const pageNum = Math.max(parseInt(page), 1)
+  const limitNum = Math.max(parseInt(limit), 1)
+  const offset = (pageNum - 1) * limitNum
+
+  const result = await c.env.DB.prepare(`
+    SELECT * FROM food_logs
+    ${whereSQL}
+    ORDER BY log_date DESC, log_time DESC
+    LIMIT ? OFFSET ?
+  `).bind(...binds, limitNum, offset).all()
+
+  // 總筆數（分頁用）
+  const countRes = await c.env.DB.prepare(`
+    SELECT COUNT(*) as total FROM food_logs ${whereSQL}
+  `).bind(...binds).first()
+
+  return c.json({
+    total: countRes?.total || 0,
+    page: pageNum,
+    limit: limitNum,
+    results: result.results,
+  })
 })
 
 // ✅ 新增飲食紀錄
