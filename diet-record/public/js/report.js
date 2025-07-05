@@ -45,6 +45,9 @@ async function loadStats(range = 'today', start = '', end = '') {
 
   // 1. 總量圖表
   const summaryCtx = document.getElementById('summaryChart').getContext('2d')
+  const summaryTitle = document.createElement('h5')
+  summaryTitle.textContent = '每日熱量與三大營養素趨勢'
+  summaryCtx.canvas.parentNode.insertBefore(summaryTitle, summaryCtx.canvas)
   summaryChart = new Chart(summaryCtx, {
     type: 'line',
     data: {
@@ -79,7 +82,35 @@ async function loadStats(range = 'today', start = '', end = '') {
     options: {
       responsive: true,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'nearest' } },
+      plugins: { 
+        legend: { position: 'bottom',
+          labels: {
+            generateLabels: (chart) => {
+              const datasets = chart.data.datasets;
+              return datasets.map((dataset, i) => ({
+                text: dataset.label,
+                fillStyle: dataset.borderColor,
+                strokeStyle: dataset.borderColor,
+                lineWidth: 1,
+                hidden: !chart.isDatasetVisible(i),
+                index: i
+              }));
+            },
+            // Override label callback to show "名字 數值 單位" format in legend
+            label: (ctx) => {
+              const label = ctx.text || '';
+              // We don't have a value here in legend, so just return label as is
+              return label;
+            }
+          }
+        }, 
+        tooltip: { 
+          mode: 'nearest',
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label.replace(/\s*\(.+?\)/, '')} ${ctx.raw} ${ctx.dataset.label.match(/\((.+?)\)/)?.[1] || ''}`
+          }
+        } 
+      },
       scales: {
         y: { beginAtZero: true, title: { display: true, text: '克 / 千卡' } },
         x: { title: { display: true, text: '日期' } }
@@ -92,6 +123,9 @@ async function loadStats(range = 'today', start = '', end = '') {
   const total = (key) => data.reduce((sum, d) => sum + (d[key] || 0), 0) / totalDays
 
   const catCtx = document.getElementById('categoryChart').getContext('2d')
+  const categoryTitle = document.createElement('h5')
+  categoryTitle.textContent = '六大類食物攝取分布（平均）'
+  catCtx.canvas.parentNode.insertBefore(categoryTitle, catCtx.canvas)
   categoryChart = new Chart(catCtx, {
     type: 'pie',
     data: {
@@ -111,7 +145,26 @@ async function loadStats(range = 'today', start = '', end = '') {
     options: {
       responsive: true,
       plugins: {
-        legend: { position: 'bottom' },
+        legend: { 
+          position: 'bottom',
+          labels: {
+            generateLabels: (chart) => {
+              const data = chart.data;
+              if (data.labels.length && data.datasets.length) {
+                return data.labels.map((label, i) => {
+                  const value = data.datasets[0].data[i];
+                  return {
+                    text: `${label} ${value.toFixed(1)} 份`,
+                    fillStyle: data.datasets[0].backgroundColor[i],
+                    strokeStyle: data.datasets[0].backgroundColor[i],
+                    index: i
+                  }
+                })
+              }
+              return [];
+            }
+          }
+        },
         tooltip: {
           callbacks: {
             label: (ctx) => `${ctx.label}: ${ctx.raw.toFixed(1)} 份`
@@ -125,6 +178,9 @@ async function loadStats(range = 'today', start = '', end = '') {
   const line2Canvas = document.getElementById('lineCategoryChart')
   if (line2Canvas) {
     const line2Ctx = line2Canvas.getContext('2d')
+    const categoryLineTitle = document.createElement('h5')
+    categoryLineTitle.textContent = '每日六大類食物攝取趨勢'
+    line2Ctx.canvas.parentNode.insertBefore(categoryLineTitle, line2Ctx.canvas)
     categoryLineChart = new Chart(line2Ctx, {
       type: 'line',
       data: {
@@ -142,7 +198,12 @@ async function loadStats(range = 'today', start = '', end = '') {
         responsive: true,
         plugins: {
           legend: { position: 'bottom' },
-          tooltip: { mode: 'nearest' }
+          tooltip: { 
+            mode: 'nearest',
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label.replace(/\s*\(.+?\)/, '')} ${ctx.raw} ${ctx.dataset.label.match(/\((.+?)\)/)?.[1] || ''}`
+            }
+          }
         },
         scales: {
           y: { beginAtZero: true, title: { display: true, text: '份' } },
@@ -154,6 +215,9 @@ async function loadStats(range = 'today', start = '', end = '') {
 
   // 3. 營養比例（每日平均）
   const macroCtx = document.getElementById('macroChart').getContext('2d')
+  const macroTitle = document.createElement('h5')
+  macroTitle.textContent = '每日平均三大營養素比例'
+  macroCtx.canvas.parentNode.insertBefore(macroTitle, macroCtx.canvas)
   macroChart = new Chart(macroCtx, {
     type: 'doughnut',
     data: {
@@ -166,10 +230,31 @@ async function loadStats(range = 'today', start = '', end = '') {
     options: {
       responsive: true,
       plugins: {
-        legend: { position: 'bottom' },
-        tooltip: { callbacks: {
-          label: (ctx) => `${ctx.label}: ${ctx.raw.toFixed(1)} g`
-        }}
+        legend: { 
+          position: 'bottom',
+          labels: {
+            generateLabels: (chart) => {
+              const data = chart.data;
+              if (data.labels.length && data.datasets.length) {
+                return data.labels.map((label, i) => {
+                  const value = data.datasets[0].data[i];
+                  return {
+                    text: `${label} ${value.toFixed(1)} g`,
+                    fillStyle: data.datasets[0].backgroundColor[i],
+                    strokeStyle: data.datasets[0].backgroundColor[i],
+                    index: i
+                  }
+                })
+              }
+              return [];
+            }
+          }
+        },
+        tooltip: { 
+          callbacks: {
+            label: (ctx) => `${ctx.label}: ${ctx.raw.toFixed(1)} g`
+          }
+        }
       }
     }
   })
@@ -290,7 +375,7 @@ async function loadStats(range = 'today', start = '', end = '') {
       if (idx < 3) col.classList.add('col-md-4')
       else col.classList.add('d-none')
     } else {
-      col.classList.add('col-md-6')
+      col.classList.add('col-md-3')
     }
   })
 }
