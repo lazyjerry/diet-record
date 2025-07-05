@@ -231,19 +231,27 @@ async function loadStats(range = 'today', start = '', end = '') {
     }
 
     const [group1Body, group2Body] = statsTable.querySelectorAll('tbody')
+    // 清除現有表格內容
+    group1Body.innerHTML = ''
+    group2Body.innerHTML = ''
+    console.log("data", JSON.stringify(data))
+  
+    // 六大營養素
     grouped[0].forEach(key => {
-      const totalVal = data.reduce((sum, d) => sum + (d[key] || 0), 0)
+      const totalVal = data.reduce((sum, d) => sum + (typeof d[key] === 'number' ? d[key] : 0), 0)
       const avgVal = totalVal / (data.length || 1)
       group1Body.insertAdjacentHTML('beforeend', `
         <tr>
           <td class="px-3 py-2">${names[key]}</td>
-          <td class="px-3 py-2">${totalVal.toFixed(1)}${unitMap[key]}</td>
-          <td class="px-3 py-2">${avgVal.toFixed(1)}${unitMap[key]}</td>
+          <td class="px-3 py-2">${totalVal.toFixed(1)} ${unitMap[key]}</td>
+          <td class="px-3 py-2">${avgVal.toFixed(1)} ${unitMap[key]}</td>
         </tr>
       `)
     })
+
+    // 碳水、蛋白、脂肪、熱量
     grouped[1].forEach(key => {
-      const totalVal = data.reduce((sum, d) => sum + (d[key] || 0), 0)
+      const totalVal = data.reduce((sum, d) => sum + (typeof d[key] === 'number' ? d[key] : 0), 0)
       const avgVal = totalVal / (data.length || 1)
       group2Body.insertAdjacentHTML('beforeend', `
         <tr>
@@ -253,6 +261,21 @@ async function loadStats(range = 'today', start = '', end = '') {
         </tr>
       `)
     })
+
+    // 統計摘要
+    const statDays = document.getElementById('statDays')
+    const statCount = document.getElementById('statCount')
+    const statAvgPerDay = document.getElementById('statAvgPerDay')
+    if (statDays && statCount && statAvgPerDay) {
+      const dates = new Set(data.map(d => d.log_date))
+      const totalRecords = data.length
+      const totalDays = dates.size
+      const avgPerDay = totalRecords / (totalDays || 1)
+
+      statDays.textContent = totalDays.toString()
+      statCount.textContent = totalRecords.toString()
+      statAvgPerDay.textContent = avgPerDay.toFixed(1)
+    }
   }
 
   // 6. 根據 isTimeDetailed 調整圖表排版
