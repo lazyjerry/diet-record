@@ -45,9 +45,7 @@ async function loadStats(range = 'today', start = '', end = '') {
 
   // 1. 總量圖表
   const summaryCtx = document.getElementById('summaryChart').getContext('2d')
-  const summaryTitle = document.createElement('h5')
-  summaryTitle.textContent = '每日熱量與三大營養素趨勢'
-  summaryCtx.canvas.parentNode.insertBefore(summaryTitle, summaryCtx.canvas)
+  
   summaryChart = new Chart(summaryCtx, {
     type: 'line',
     data: {
