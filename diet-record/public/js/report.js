@@ -121,13 +121,7 @@ async function loadStats(range = 'today', start = '', end = '') {
   const total = (key) => data.reduce((sum, d) => sum + (d[key] || 0), 0) / totalDays
 
   const catCtx = document.getElementById('categoryChart').getContext('2d')
-  // 先移除舊的標題（如果有）
-  const oldCategoryTitle = catCtx.canvas.parentNode.querySelector('h5')
-  if (oldCategoryTitle) oldCategoryTitle.remove()
-  // 插入新的標題
-  const categoryTitle = document.createElement('h5')
-  categoryTitle.textContent = '六大類食物攝取分布（平均）'
-  catCtx.canvas.parentNode.insertBefore(categoryTitle, catCtx.canvas)
+  
   categoryChart = new Chart(catCtx, {
     type: 'pie',
     data: {
