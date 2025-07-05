@@ -22,7 +22,10 @@ async function loadStats(range = 'today', start = '', end = '') {
     headers: { Authorization: `Bearer ${token}` }
   })
 
-  const data = await res.json()
+  const result = await res.json()
+  const data = result.data || result // 支援兩種格式
+  const totalCount = result.totalCount || data.length
+
   // 檢查是否有資料
   if (!data || data.length === 0) {
     const msg = document.createElement('div')
@@ -268,7 +271,7 @@ async function loadStats(range = 'today', start = '', end = '') {
     const statAvgPerDay = document.getElementById('statAvgPerDay')
     if (statDays && statCount && statAvgPerDay) {
       const dates = new Set(data.map(d => d.log_date))
-      const totalRecords = data.length
+      const totalRecords = totalCount
       const totalDays = dates.size
       const avgPerDay = totalRecords / (totalDays || 1)
 
