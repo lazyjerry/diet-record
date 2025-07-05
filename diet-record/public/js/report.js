@@ -123,6 +123,10 @@ async function loadStats(range = 'today', start = '', end = '') {
   const total = (key) => data.reduce((sum, d) => sum + (d[key] || 0), 0) / totalDays
 
   const catCtx = document.getElementById('categoryChart').getContext('2d')
+  // 先移除舊的標題（如果有）
+  const oldCategoryTitle = catCtx.canvas.parentNode.querySelector('h5')
+  if (oldCategoryTitle) oldCategoryTitle.remove()
+  // 插入新的標題
   const categoryTitle = document.createElement('h5')
   categoryTitle.textContent = '六大類食物攝取分布（平均）'
   catCtx.canvas.parentNode.insertBefore(categoryTitle, catCtx.canvas)
@@ -178,9 +182,7 @@ async function loadStats(range = 'today', start = '', end = '') {
   const line2Canvas = document.getElementById('lineCategoryChart')
   if (line2Canvas) {
     const line2Ctx = line2Canvas.getContext('2d')
-    const categoryLineTitle = document.createElement('h5')
-    categoryLineTitle.textContent = '每日六大類食物攝取趨勢'
-    line2Ctx.canvas.parentNode.insertBefore(categoryLineTitle, line2Ctx.canvas)
+    
     categoryLineChart = new Chart(line2Ctx, {
       type: 'line',
       data: {
@@ -215,9 +217,7 @@ async function loadStats(range = 'today', start = '', end = '') {
 
   // 3. 營養比例（每日平均）
   const macroCtx = document.getElementById('macroChart').getContext('2d')
-  const macroTitle = document.createElement('h5')
-  macroTitle.textContent = '每日平均三大營養素比例'
-  macroCtx.canvas.parentNode.insertBefore(macroTitle, macroCtx.canvas)
+ 
   macroChart = new Chart(macroCtx, {
     type: 'doughnut',
     data: {
@@ -260,14 +260,16 @@ async function loadStats(range = 'today', start = '', end = '') {
   })
 
   // 4. 比較區間（只有 2 筆以上資料才畫）
-  const compContainer = document.getElementById('comparisonChart')?.closest('.col-md-12')
+  const compContainer = document.getElementById('comparisonChart')?.closest('.chat-container')
   if (compContainer) {
     compContainer.style.display = isTimeDetailed ? 'none' : ''
   }
+  
   if (data.length >= 2 && !isTimeDetailed) {
     const first = data[0]
     const last = data[data.length - 1]
     const compCtx = document.getElementById('comparisonChart').getContext('2d')
+
     comparisonChart = new Chart(compCtx, {
       type: 'bar',
       data: {
