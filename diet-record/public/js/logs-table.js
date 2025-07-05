@@ -1,6 +1,8 @@
 import { token } from './auth.js'
 import { openEditModal } from './logs-form.js'
 
+// 如果需要匯入 updatePaginationButtons 本身，略過（此為定義內部函式）
+
 // 全域變數：目前頁碼
 export let currentPage = 1
 
@@ -33,6 +35,10 @@ export async function loadLogs({ start = '', end = '', keyword = '', page = 1 } 
   currentPage = page
   const indicator = document.getElementById('pageIndicator')
   if (indicator) indicator.textContent = `第 ${page} 頁`
+
+  if ('currentPage' in data && 'hasNextPage' in data) {
+    updatePaginationButtons(data.currentPage, data.hasNextPage)
+  }
 }
 
 /**
@@ -127,4 +133,18 @@ export function bindPaginationControls() {
   nextBtn.addEventListener('click', () => {
     loadLogs({ page: currentPage + 1 })
   })
+}
+
+/**
+ * 根據目前分頁狀態，更新上下頁按鈕
+ * @param {number} currentPage
+ * @param {boolean} hasNextPage
+ */
+export function updatePaginationButtons(currentPage, hasNextPage) {
+  const prevBtn = document.getElementById('prevPageBtn')
+  const nextBtn = document.getElementById('nextPageBtn')
+  if (!prevBtn || !nextBtn) return
+
+  prevBtn.disabled = currentPage <= 1
+  nextBtn.disabled = !hasNextPage
 }
