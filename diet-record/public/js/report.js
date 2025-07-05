@@ -282,7 +282,7 @@ async function loadStats(range = 'today', start = '', end = '') {
   }
 
   // 6. 根據 isTimeDetailed 調整圖表排版
-  const chartCols = document.querySelectorAll('.row.g-4 > div[class*="col-"]')
+  const chartCols = document.querySelectorAll('.row.g-4.chart > div[class*="col-"]')
   chartCols.forEach((col, idx) => {
     col.classList.remove('col-md-4', 'col-md-6', 'd-none')
     if (isTimeDetailed) {
