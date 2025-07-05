@@ -327,12 +327,14 @@ async function loadStats(range = 'today', start = '', end = '') {
     // 六大營養素
     grouped[0].forEach(key => {
       const totalVal = data.reduce((sum, d) => sum + (typeof d[key] === 'number' ? d[key] : 0), 0)
-      const avgVal = totalVal / (totalCount || 1)
+      const avgVal = totalVal / (data.length || 1)
+      const avgMealVal = totalVal / (totalCount || 1)
       group1Body.insertAdjacentHTML('beforeend', `
         <tr>
           <td class="px-3 py-2">${names[key]}</td>
           <td class="px-3 py-2">${totalVal.toFixed(1)} ${unitMap[key]}</td>
           <td class="px-3 py-2">${avgVal.toFixed(1)} ${unitMap[key]}</td>
+          <td class="px-3 py-2">${avgMealVal.toFixed(1)} ${unitMap[key]}</td>
         </tr>
       `)
     })
@@ -340,12 +342,14 @@ async function loadStats(range = 'today', start = '', end = '') {
     // 碳水、蛋白、脂肪、熱量
     grouped[1].forEach(key => {
       const totalVal = data.reduce((sum, d) => sum + (typeof d[key] === 'number' ? d[key] : 0), 0)
-      const avgVal = totalVal / (totalCount|| 1)
+      const avgVal = totalVal / (data.length || 1)
+      const avgMealVal = totalVal / (totalCount || 1)
       group2Body.insertAdjacentHTML('beforeend', `
         <tr>
           <td class="px-3 py-2">${names[key]}</td>
           <td class="px-3 py-2">${totalVal.toFixed(1)} ${unitMap[key]}</td>
           <td class="px-3 py-2">${avgVal.toFixed(1)} ${unitMap[key]}</td>
+          <td class="px-3 py-2">${avgMealVal.toFixed(1)} ${unitMap[key]}</td>
         </tr>
       `)
     })
