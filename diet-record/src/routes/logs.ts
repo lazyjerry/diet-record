@@ -8,65 +8,143 @@ type Bindings = {
 
 export const logs = new Hono<{ Bindings: Bindings }>();
 
-// ✅ 查詢歷史紀錄（支援日期區間、關鍵字、分頁，預設近三天）
+// 檢查日期格式是否為 YYYY-MM-DD
+function checkDateFormat(date: string): boolean {
+	// 檢查日期格式是否為 YYYY-MM-DD
+	return /^\d{4}-\d{2}-\d{2}$/.test(date);
+}
+
+// 取得當前日期（台北時區）
+function getDateInTaipei(): Date {
+	const now = new Date();
+	const utc = now.getTime() + now.getTimezoneOffset() * 60_000;
+	const offsetInMs = 8 * 60 * 60 * 1000; // +8 小時
+	const taipeiDate = new Date(utc + offsetInMs);
+	taipeiDate.setHours(0, 0, 0, 0); // 設定為 00:00:00.000
+	return taipeiDate;
+}
+
+// 將 Date 物件格式化為 YYYY-MM-DD 字串
+function formatDateToYMD(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, "0"); // 月份是 0-based
+	const day = String(date.getDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+// 將 YYYY-MM-DD 字串解析為 Date 物件
+function parseYMDToDate(ymd: string): Date {
+	const [year, month, day] = ymd.split("-").map(Number);
+	return new Date(year, month - 1, day); // 注意：月份是 0-based
+}
+
+// ✅ 查詢歷史紀錄（支援日期區間、關鍵字、分頁，預設當天）
 logs.get("/api/logs", authMiddleware, async (c) => {
 	const user = c.get("user");
-	const { start, end, keyword, page = "1", limit = "10" } = c.req.query();
+	let { start, end, keyword, page = "1" } = c.req.query();
 
 	const conditions: string[] = ["user_id = ?"];
 	const binds: any[] = [user.id];
-
-	if (start) {
-		conditions.push("log_date >= ?");
-		binds.push(start);
-	}
-
-	if (end) {
-		conditions.push("log_date <= ?");
-		binds.push(end);
-	}
 
 	if (keyword) {
 		conditions.push("(log_time LIKE ? OR description LIKE ?)");
 		binds.push(`%${keyword}%`, `%${keyword}%`);
 	}
 
-	if (!start && !end) {
-		conditions.push('log_date >= date("now", "-3 days", "localtime")');
+	// 分頁處理
+	const pageNum = Math.max(parseInt(page), 1);
+
+	const offsetDays = 1 - pageNum;
+
+	// 取得當前日期（台北時區）
+	let targetDate = getDateInTaipei();
+	let targetDateString = formatDateToYMD(targetDate);
+
+	if (!end) {
+		end = targetDateString; // 如果沒有指定結束日期，則使用當天日期
+	}
+	if (!start) {
+		// 如果沒有指定開始日期，則使紀錄最早的日期
+		const firstLogDateResult = await c.env.DB.prepare(
+			`
+    SELECT log_date as log_date FROM food_logs ORDER BY log_date ASC LIMIT 1
+  `
+		).first();
+		// 如果沒有紀錄，則使用當天日期
+		start = firstLogDateResult?.log_date ?? targetDateString;
+	}
+
+	// 請檢查 start 格式是否正確
+	if (!checkDateFormat(start)) {
+		return c.json({ message: "開始日期格式錯誤，請使用 YYYY-MM-DD" }, 400);
+	}
+
+	// 請檢查 end 格式是否正確
+	if (!checkDateFormat(end)) {
+		return c.json({ message: "結束日期格式錯誤，請使用 YYYY-MM-DD" }, 400);
+	}
+
+	// 如果開始日期大於結束日期
+	let endDate = parseYMDToDate(end);
+	let startDate = parseYMDToDate(start);
+	if (startDate > endDate) {
+		//交換
+		let temp = startDate;
+		startDate = endDate;
+		endDate = temp;
+
+		let tempstr = start;
+		start = end;
+		end = tempstr;
+	}
+
+	// console.log("targetDateString:", targetDateString);
+	// 是否有下一頁的標記，以日期為主
+	let hasNextPage = true;
+
+	endDate.setDate(endDate.getDate() + offsetDays);
+	targetDateString = formatDateToYMD(endDate);
+
+	if (startDate >= targetDate) {
+		// 如果開始日期已經大於或等於目標日期，則沒有下一頁
+		hasNextPage = false;
+	}
+
+	// console.log("startDate:", startDate);
+	// console.log("targetDate:", targetDate);
+
+	// 取得現在日期
+	conditions.push("log_date = ?");
+	binds.push(targetDateString);
+
+	// console.log("offsetDays:", offsetDays);
+	// console.log("targetDateString:", targetDateString);
+
+	if (start) {
+		conditions.push("log_date >= ?");
+		binds.push(start);
+	}
+	if (end) {
+		conditions.push("log_date <= ?");
+		binds.push(end);
 	}
 
 	const whereSQL = `WHERE ${conditions.join(" AND ")}`;
-
-	// 分頁處理
-	const pageNum = Math.max(parseInt(page), 1);
-	const limitNum = Math.max(parseInt(limit), 1);
-	const offset = (pageNum - 1) * limitNum;
-
-	const result = await c.env.DB.prepare(
-		`
+	const sql = `
     SELECT * FROM food_logs
     ${whereSQL}
     ORDER BY log_date DESC, log_time DESC
-    LIMIT ? OFFSET ?
-  `
-	)
-		.bind(...binds, limitNum, offset)
+    `;
+
+	// console.log("SQL:", sql);
+	// console.log("Binds:", binds);
+	const result = await c.env.DB.prepare(sql)
+		.bind(...binds)
 		.all();
 
-	// 總筆數（分頁用）
-	const countRes = await c.env.DB.prepare(
-		`
-    SELECT COUNT(*) as total FROM food_logs ${whereSQL}
-  `
-	)
-		.bind(...binds)
-		.first();
-
 	return c.json({
-		total: countRes?.total || 0,
 		currentPage: pageNum,
-		limit: limitNum,
-		hasNextPage: (countRes?.total || 0) > pageNum * limitNum,
+		hasNextPage: hasNextPage,
+		targetDate: targetDateString,
 		results: result.results,
 	});
 });
