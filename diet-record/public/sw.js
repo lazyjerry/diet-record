@@ -20,10 +20,17 @@ self.addEventListener("install", (event) => {
   );
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url)
+  if (url.pathname.startsWith('/api/')) return  // ⛔ 不攔截 API 請求
+
   event.respondWith(
-    caches.match(event.request).then(
-      (response) => response || fetch(event.request)
-    )
-  );
-});
+    (async () => {
+      const response = await fetch(event.request)
+      if (response.redirected) {
+        return fetch(response.url)  // 重新請求最終資源
+      }
+      return response
+    })()
+  )
+})
