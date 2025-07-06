@@ -31,10 +31,12 @@ export async function loadLogs({ start = '', end = '', keyword = '', page = 1 } 
   const logs = data.results || data // 支援未啟用分頁時的兼容
   body.innerHTML = logs.map(renderLogRow).join('')
 
+  console.log('載入飲食紀錄:', data)
+
   // 儲存目前頁碼至全域變數，並更新頁碼顯示
   currentPage = page
   const indicator = document.getElementById('pageIndicator')
-  if (indicator) indicator.textContent = `第 ${page} 頁`
+  indicator.textContent = data.targetDate || '';
 
   if ('currentPage' in data && 'hasNextPage' in data) {
     updatePaginationButtons(data.currentPage, data.hasNextPage)
@@ -147,4 +149,14 @@ export function updatePaginationButtons(currentPage, hasNextPage) {
 
   prevBtn.disabled = currentPage <= 1
   nextBtn.disabled = !hasNextPage
+  if( prevBtn.disabled ) {
+    prevBtn.classList.add('disabled')
+  }else{
+    prevBtn.classList.remove('disabled')
+  }
+  if( nextBtn.disabled ) {
+    nextBtn.classList.add('disabled')
+  }else{
+    nextBtn.classList.remove('disabled')
+  }
 }
