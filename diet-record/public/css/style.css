@@ -33,3 +33,10 @@ table td, table th {
 .table-three{
   min-width: 100px;
 }
+
+.logModalHint{
+  margin-left: 0.5rem;
+  padding-bottom: 0.3rem;
+  color: #734e27;
+  border-bottom: 1px solid #dee2e6;
+}
