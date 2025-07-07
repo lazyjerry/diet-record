@@ -7,6 +7,16 @@
 		/>
 		<meta charset="utf-8" />
 		<title>飲食統計</title>
+
+		<link
+			rel="manifest"
+			href="/manifest.webmanifest"
+		/>
+		<meta
+			name="theme-color"
+			content="#3b2b23"
+		/>
+
 		<link
 			rel="manifest"
 			href="/manifest.json"
@@ -201,5 +211,10 @@
 			src="/js/report.js"
 			type="module"
 		></script>
+		<script>
+			if ("serviceWorker" in navigator) {
+				navigator.serviceWorker.register("/sw.js").catch(console.error);
+			}
+		</script>
 	</body>
 </html>

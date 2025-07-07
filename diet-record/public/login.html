@@ -7,6 +7,16 @@
 			content="width=device-width, initial-scale=1"
 		/>
 		<title>登入 - 飲食紀錄</title>
+
+		<link
+			rel="manifest"
+			href="/manifest.webmanifest"
+		/>
+		<meta
+			name="theme-color"
+			content="#3b2b23"
+		/>
+
 		<link
 			rel="manifest"
 			href="/manifest.json"
@@ -34,7 +44,7 @@
 				<div class="col-12 col-md-6 col-lg-5">
 					<div class="card shadow-sm">
 						<div class="card-body">
-							<h3 class="card-title text-center mb-4">飲食紀錄登入</h3>
+							<h3 class="card-title text-center mb-4">飲食紀錄 登入</h3>
 							<div
 								id="alertBox"
 								class="alert d-none"
@@ -106,5 +116,10 @@
 			src="/js/login.js"
 			type="module"
 		></script>
+		<script>
+			if ("serviceWorker" in navigator) {
+				navigator.serviceWorker.register("/sw.js").catch(console.error);
+			}
+		</script>
 	</body>
 </html>
