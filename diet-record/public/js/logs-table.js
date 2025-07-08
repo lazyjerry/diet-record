@@ -8,6 +8,7 @@ export let currentPage = 1
 
 const body = document.getElementById('logsBody')
 
+
 /**
  * 載入飲食紀錄資料（支援搜尋與分頁）
  * @param {object} options 

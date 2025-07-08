@@ -7,7 +7,6 @@ import { loadLogs, bindLogTableActions, bindSearchForm, bindPaginationControls }
 document.addEventListener('DOMContentLoaded', () => {
 
   showUserName()
-
   bindNutritionEvents() 
   calcNutrition()
 
