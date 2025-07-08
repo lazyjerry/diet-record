@@ -10,9 +10,29 @@ const modalTitle = document.getElementById('logModalTitle')
 let editLogId = null
 
 function setTodayDate(inputId) {
-    const input = document.getElementById(inputId)
-    input.value = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
-  }
+  const input = document.getElementById(inputId)
+  input.value = new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000).toISOString().split('T')[0]
+}
+
+
+function setLogModalHint() {
+  const hint = document.getElementById('logModalHint')
+  if (hint) {
+    // 給我一些提示文字，讓使用者知道這不只是紀錄，更是一個儀式和反思
+    const hintTexts = [
+      '請仔細思考你的餐點有哪些營養，用心紀錄',
+      '請填寫餐點的營養成分，幫助你更好地了解飲食',
+      '記錄你的餐點營養，讓健康飲食更加簡單',
+      '每餐的營養成分都很重要，請詳細填寫',
+      '營養均衡是健康的關鍵，請填寫餐點資訊',
+      '記錄飲食習慣，讓健康飲食成為日常',
+      '這不只是紀錄，更是一個反思與儀式，讓每一餐都更有意義',
+      '用心記錄每一餐，讓健康成為你的日常儀式',
+      '透過記錄，與自己的飲食習慣對話，發現更好的自己'
+    ]
+    hint.textContent = hintTexts[Math.floor(Math.random() * hintTexts.length)];
+}
+
 
 // 開啟 modal：新增模式
 export function openLogModal() {
