@@ -1,20 +1,23 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "diet-record",
-  "main": "src/index.ts",
-  "compatibility_date": "2025-07-03",
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "diet-record-db",
-      "database_id": "0ab4ba61-0bf4-49da-bc9f-161168ac0c0d"
-    }
-  ],
-  "observability": {
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "diet-record",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-07-03",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "diet-record-db",
+			"database_id": "0ab4ba61-0bf4-49da-bc9f-161168ac0c0d"
+		}
+	],
+	"observability": {
 		"enabled": true
 	},
 	"assets": {
 		"directory": "./public",
 		"binding": "ASSETS"
+	},
+	"vars": {
+		"ALLOW_MULTI_USER": "false"
 	}
 }

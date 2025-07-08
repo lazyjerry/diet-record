@@ -40,3 +40,31 @@ CREATE TABLE food_logs (
 
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- 🔍 提升查詢 /api/logs 查詢效能（條件包含 user_id、log_date）
+CREATE INDEX IF NOT EXISTS idx_food_logs_user_date
+ON food_logs (user_id, log_date);
+
+-- 🔍 提升 keyword 搜尋效能（log_time, description）
+CREATE INDEX IF NOT EXISTS idx_food_logs_keywords
+ON food_logs (log_time, description);
+
+-- 🔍 提升 /api/logs/:id PUT/DELETE 查詢效能
+CREATE INDEX IF NOT EXISTS idx_food_logs_id_user
+ON food_logs (id, user_id);
+
+-- 🔍 如果前端有使用 ORDER BY created_at DESC，可考慮加上
+CREATE INDEX IF NOT EXISTS idx_food_logs_created
+ON food_logs (created_at DESC);
+
+-- （可選）若查詢使用 ORDER BY log_date DESC, created_at DESC 同時使用
+CREATE INDEX IF NOT EXISTS idx_food_logs_date_created
+ON food_logs (user_id, log_date DESC, created_at DESC);
+
+-- ✅ 用於統計查詢，支援 WHERE user_id + log_date 篩選與 GROUP BY log_date 的最佳化
+CREATE INDEX IF NOT EXISTS idx_stats_user_date
+ON food_logs (user_id, log_date);
+
+-- ✅ 若統計需要頻繁按照 log_date 排序，可使用這個 index（可選）
+CREATE INDEX IF NOT EXISTS idx_stats_date
+ON food_logs (log_date);
