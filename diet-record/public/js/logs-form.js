@@ -31,6 +31,7 @@ function setLogModalHint() {
       '透過記錄，與自己的飲食習慣對話，發現更好的自己'
     ]
     hint.textContent = hintTexts[Math.floor(Math.random() * hintTexts.length)];
+  }
 }
 
 
