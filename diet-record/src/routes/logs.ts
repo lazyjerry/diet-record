@@ -132,7 +132,7 @@ logs.get("/api/logs", authMiddleware, async (c) => {
 	const sql = `
     SELECT * FROM food_logs
     ${whereSQL}
-    ORDER BY log_date DESC, log_time DESC
+    ORDER BY log_date DESC, created_at DESC
     `;
 
 	// console.log("SQL:", sql);

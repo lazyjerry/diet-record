@@ -6,8 +6,9 @@ async function checkUserCount() {
   try {
     const res = await fetch('/api/user-count')
     const data = await res.json()
-    if (data.count === 0) {
-      nameField.classList.remove('d-none') // 顯示註冊欄位
+    // 檢查是否允許註冊
+    if (data.allowRegister || data.count === 0) {
+      nameField.classList.remove('d-none') // 顯示註冊欄
     }
   } catch (err) {
     console.warn('用戶數查詢失敗：', err)

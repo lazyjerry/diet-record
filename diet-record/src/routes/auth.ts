@@ -6,6 +6,7 @@ import { authMiddleware } from "../middleware/auth";
 type Bindings = {
 	DB: D1Database;
 	JWT_SECRET: string;
+	ALLOW_MULTI_USER: string; // 是否允許多用戶註冊
 };
 
 export const auth = new Hono<{ Bindings: Bindings }>();
@@ -34,6 +35,7 @@ auth.post("/api/verify", authMiddleware, async (c) => {
 	return c.json({ valid: true, payload });
 });
 
+// 更新用戶
 auth.put("/api/user", authMiddleware, async (c) => {
 	const { id } = c.get("user");
 	const { name, password } = await c.req.json();
@@ -50,11 +52,14 @@ auth.put("/api/user", authMiddleware, async (c) => {
 	return c.json({ message: "ok" });
 });
 
+// 取得用戶數量
 auth.get("/api/user-count", async (c) => {
 	const result = await c.env.DB.prepare("SELECT COUNT(*) as count FROM users").first();
-	return c.json({ count: result.count });
+	const allowRegister = c.env.ALLOW_MULTI_USER === "true";
+	return c.json({ count: result.count, allowRegister: allowRegister });
 });
 
+// 登入或註冊 API
 auth.post("/api/login", async (c) => {
 	const { username, password, name } = await c.req.json();
 	if (!username || !password) {
@@ -62,20 +67,29 @@ auth.post("/api/login", async (c) => {
 	}
 
 	const db = c.env.DB;
-	const user = await db.prepare("SELECT * FROM users WHERE username = ?").bind(username).first();
 
-	// ✅ 已存在帳號 → 驗證密碼
-	if (user) {
-		const match = await bcrypt.compare(password, user.password);
-		if (!match) return c.json({ message: "密碼錯誤" }, 401);
+	if (!name) {
+		const user = await db.prepare("SELECT * FROM users WHERE username = ?").bind(username).first();
 
-		const token = await createJwt({ id: user.id, name: user.name, ua: c.req.header("user-agent") }, c.env.JWT_SECRET);
-		return c.json({ token });
+		// ✅ 已存在帳號 → 驗證密碼
+		if (user) {
+			const match = await bcrypt.compare(password, user.password);
+			if (!match) return c.json({ message: "密碼錯誤" }, 401);
+
+			const token = await createJwt({ id: user.id, name: user.name, ua: c.req.header("user-agent") }, c.env.JWT_SECRET);
+			return c.json({ token });
+		}
 	}
 
-	// ✅ 首位註冊用戶（僅限一次）
-	const count = await db.prepare("SELECT COUNT(*) as count FROM users").first();
-	if (count.count === 0 && name) {
+	// 檢查是否允許註冊
+	const allowRegister = c.env.ALLOW_MULTI_USER === "true" || (await db.prepare("SELECT COUNT(*) as count FROM users").first()).count === 0;
+
+	if (allowRegister && name) {
+		// 檢查 username 是否已存在
+		const existingUser = await db.prepare("SELECT * FROM users WHERE username = ?").bind(username).first();
+		if (existingUser) {
+			return c.json({ message: "帳號已存在，如果需要登入姓名欄位請留空" }, 409);
+		}
 		const hash = await bcrypt.hash(password, 10);
 		await db.prepare("INSERT INTO users (username, password, name) VALUES (?, ?, ?)").bind(username, hash, name).run();
 
