@@ -42,6 +42,7 @@ export function openLogModal() {
   form.reset()
   setTodayDate('log_date')
   calcNutrition()
+  setLogModalHint()
   modal.show()
 }
 
