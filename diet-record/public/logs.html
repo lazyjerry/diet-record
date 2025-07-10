@@ -34,6 +34,11 @@
 			rel="stylesheet"
 		/>
 		<link
+			href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css"
+			rel="stylesheet"
+		/>
+		<script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+		<link
 			rel="stylesheet"
 			href="/css/style.css"
 		/>
@@ -151,10 +156,12 @@
 				id="logsList"
 				class="table-responsive table-responsive-sm"
 			>
-				<table class="table table-striped">
+				<table
+					class="table table-striped"
+					id="logsTable"
+				>
 					<thead>
 						<tr>
-							<th class="table-date">日期</th>
 							<th class="table-two">時段</th>
 							<th style="min-width: 200px">餐點內容</th>
 							<th class="table-two">全穀(份）</th>
@@ -266,7 +273,6 @@
 										type="text"
 										class="form-control"
 										id="description"
-										autocomplete="on"
 									/>
 								</div>
 
@@ -439,6 +445,7 @@
 									class="form-control"
 									id="newName"
 									required
+									maxlength="10"
 								/>
 							</div>
 							<div class="mb-3">

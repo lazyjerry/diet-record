@@ -1,3 +1,4 @@
+import Tagify from 'https://cdn.jsdelivr.net/npm/@yaireo/tagify/+esm'
 import { token } from './auth.js'
 import { calcNutrition } from './nutrition.js'
 import { loadLogs } from './logs-table.js'
@@ -8,6 +9,38 @@ const modal = new bootstrap.Modal(modalEl)
 const modalTitle = document.getElementById('logModalTitle')
 
 let editLogId = null
+let tagifyInstance
+
+function initTagify() {
+  const input = document.getElementById('description')
+  if (!input) return
+  if (tagifyInstance) tagifyInstance.destroy()
+
+  // 從 localStorage 取得建議 tags（最多 100 筆）
+  const stored = localStorage.getItem('tagSuggestions')
+  const suggestions = stored ? JSON.parse(stored) : []
+
+  tagifyInstance = new Tagify(input, {
+    delimiters: ',|\u3001|\\n|\\r| ',
+    trim: true,
+    dropdown: {
+      enabled: 1,
+      maxItems: 10,
+      position: "text",
+      classname: "tags-look",
+    },
+    whitelist: suggestions
+  })
+}
+
+function populateDescriptionTags(raw = '') {
+  const tags = raw
+    .split(/[\s,、\n\r]+/)
+    .map(tag => tag.trim())
+    .filter(Boolean)
+  tagifyInstance.removeAllTags()
+  tagifyInstance.addTags(tags)
+}
 
 function setTodayDate(inputId) {
   const input = document.getElementById(inputId)
@@ -40,6 +73,7 @@ export function openLogModal() {
   modalTitle.textContent = '➕ 新增紀錄'
   editLogId = null
   form.reset()
+  initTagify()
   setTodayDate('log_date')
   calcNutrition()
   setLogModalHint()
@@ -53,7 +87,9 @@ export function openEditModal(data) {
 
   document.getElementById('log_date').value = data.log_date
   document.getElementById('log_time').value = data.log_time || ''
+  initTagify()
   document.getElementById('description').value = data.description || ''
+  populateDescriptionTags(data.description || '')
   document.getElementById('grains').value = data.grains
   document.getElementById('protein').value = data.protein
   document.getElementById('vegetables').value = data.vegetables
@@ -70,10 +106,15 @@ export function bindFormSubmit() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault()
 
+    if (!tagifyInstance) initTagify()
+    const tagifyData = tagifyInstance.getCleanValue() || []
+    const description = tagifyData.map(t => t.value).join(' ')
+    console.log('Tagify Data:', tagifyData, 'Description:', description)
+
     const payload = {
       log_date: document.getElementById('log_date').value,
       log_time: document.getElementById('log_time').value,
-      description: document.getElementById('description').value,
+      description,
       grains: parseFloat(document.getElementById('grains').value || '0'),
       protein: parseFloat(document.getElementById('protein').value || '0'),
       vegetables: parseFloat(document.getElementById('vegetables').value || '0'),
@@ -99,6 +140,12 @@ export function bindFormSubmit() {
       modal.hide()
       form.reset()
       editLogId = null
+      // 更新 localStorage 中的 tag suggestions
+      const newTags = tagifyData.map(t => t.value).filter(Boolean)
+      const stored = localStorage.getItem('tagSuggestions')
+      let suggestions = stored ? JSON.parse(stored) : []
+      suggestions = [...new Set([...newTags, ...suggestions])].slice(0, 100)
+      localStorage.setItem('tagSuggestions', JSON.stringify(suggestions))
       loadLogs()
     } else {
       alert('儲存失敗')
