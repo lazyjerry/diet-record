@@ -52,7 +52,6 @@ export async function loadLogs({ start = '', end = '', keyword = '', page = 1 } 
 function renderLogRow(log) {
   return `
     <tr data-id="${log.id}" data-log='${encodeURIComponent(JSON.stringify(log))}'>
-      <td>${log.log_date}</td>
       <td>${log.log_time || ''}</td>
       <td>${log.description || ''}</td>
       <td>${log.grains}</td>

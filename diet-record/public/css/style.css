@@ -34,9 +34,21 @@ table td, table th {
   min-width: 100px;
 }
 
+.table-four{
+  min-width: 125px;
+}
+
 .logModalHint{
   margin-left: 0.5rem;
   padding-bottom: 0.3rem;
   color: #734e27;
   border-bottom: 1px solid #dee2e6;
+}
+
+td:first-child,
+th:first-child {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 2;
 }
