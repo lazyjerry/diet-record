@@ -21,7 +21,7 @@ function initTagify() {
   const suggestions = stored ? JSON.parse(stored) : []
 
   tagifyInstance = new Tagify(input, {
-    delimiters: ',\n',
+    delimiters: '。，,\n',
     trim: true,
     dropdown: {
       enabled: 1,
