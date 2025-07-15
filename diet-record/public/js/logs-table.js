@@ -46,8 +46,14 @@ export async function loadLogs({ start = '', end = '', keyword = '', page = 1 } 
   }
 }
 
-// 產生統計總和列
+/**
+ * 產生統計總和列
+ * @param {Array} logs - 飲食紀錄列表
+ * @returns {string} - HTML 字串
+ */
 function renderSummaryRow(logs) {
+  if (!logs.length) return ''
+
   const summary = {
     grains: 0,
     protein: 0,
@@ -67,9 +73,15 @@ function renderSummaryRow(logs) {
     }
   }
 
+  const count = logs.length
+  const avg = Object.fromEntries(
+    Object.entries(summary).map(([key, val]) => [key, val / count])
+  )
+
   return `
     <tr class="table-warning fw-bold">
-      <td colspan="2">總計</td>
+      <td>總計</td>
+      <td></td>
       <td>${summary.grains.toFixed(1)}</td>
       <td>${summary.protein.toFixed(1)}</td>
       <td>${summary.vegetables.toFixed(1)}</td>
@@ -80,6 +92,21 @@ function renderSummaryRow(logs) {
       <td>${Math.round(summary.proteins)}</td>
       <td>${Math.round(summary.carbs)}</td>
       <td>${Math.round(summary.fats_total)}</td>
+      <td></td>
+    </tr>
+    <tr class="table-info">
+      <td>平均</td>
+      <td></td>
+      <td>${avg.grains.toFixed(1)}</td>
+      <td>${avg.protein.toFixed(1)}</td>
+      <td>${avg.vegetables.toFixed(1)}</td>
+      <td>${avg.fruits.toFixed(1)}</td>
+      <td>${avg.dairy.toFixed(1)}</td>
+      <td>${avg.fats.toFixed(1)}</td>
+      <td>${Math.round(avg.calories)}</td>
+      <td>${Math.round(avg.proteins)}</td>
+      <td>${Math.round(avg.carbs)}</td>
+      <td>${Math.round(avg.fats_total)}</td>
       <td></td>
     </tr>
   `
