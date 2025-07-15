@@ -30,7 +30,9 @@ export async function loadLogs({ start = '', end = '', keyword = '', page = 1 } 
 
   const data = await res.json()
   const logs = data.results || data // 支援未啟用分頁時的兼容
-  body.innerHTML = logs.map(renderLogRow).join('')
+  const rowsHtml = logs.map(renderLogRow).join('')
+  const summaryRow = renderSummaryRow(logs)
+  body.innerHTML = rowsHtml + summaryRow
 
   console.log('載入飲食紀錄:', data)
 
@@ -44,6 +46,45 @@ export async function loadLogs({ start = '', end = '', keyword = '', page = 1 } 
   }
 }
 
+// 產生統計總和列
+function renderSummaryRow(logs) {
+  const summary = {
+    grains: 0,
+    protein: 0,
+    vegetables: 0,
+    fruits: 0,
+    dairy: 0,
+    fats: 0,
+    calories: 0,
+    proteins: 0,
+    carbs: 0,
+    fats_total: 0
+  }
+
+  for (const log of logs) {
+    for (const key in summary) {
+      summary[key] += Number(log[key]) || 0
+    }
+  }
+
+  return `
+    <tr class="table-warning fw-bold">
+      <td colspan="2">總計</td>
+      <td>${summary.grains.toFixed(1)}</td>
+      <td>${summary.protein.toFixed(1)}</td>
+      <td>${summary.vegetables.toFixed(1)}</td>
+      <td>${summary.fruits.toFixed(1)}</td>
+      <td>${summary.dairy.toFixed(1)}</td>
+      <td>${summary.fats.toFixed(1)}</td>
+      <td>${Math.round(summary.calories)}</td>
+      <td>${Math.round(summary.proteins)}</td>
+      <td>${Math.round(summary.carbs)}</td>
+      <td>${Math.round(summary.fats_total)}</td>
+      <td></td>
+    </tr>
+  `
+}
+
 /**
  * 產生單筆資料 HTML
  * @param {object} log 
@@ -54,16 +95,16 @@ function renderLogRow(log) {
     <tr data-id="${log.id}" data-log='${encodeURIComponent(JSON.stringify(log))}'>
       <td>${log.log_time || ''}</td>
       <td>${log.description || ''}</td>
-      <td>${log.grains}</td>
-      <td>${log.protein}</td>
-      <td>${log.vegetables}</td>
-      <td>${log.fruits}</td>
-      <td>${log.dairy}</td>
-      <td>${log.fats}</td>
-      <td>${Math.round(log.calories)}</td>
-      <td>${Math.round(log.proteins)}</td>
-      <td>${Math.round(log.carbs)}</td>
-      <td>${Math.round(log.fats_total)}</td>
+      <td class="number">${log.grains}</td>
+      <td class="number">${log.protein}</td>
+      <td class="number">${log.vegetables}</td>
+      <td class="number">${log.fruits}</td>
+      <td class="number">${log.dairy}</td>
+      <td class="number">${log.fats}</td>
+      <td class="number">${Math.round(log.calories)}</td>
+      <td class="number">${Math.round(log.proteins)}</td>
+      <td class="number">${Math.round(log.carbs)}</td>
+      <td class="number">${Math.round(log.fats_total)}</td>
       <td>
         <button class="btn btn-sm btn-outline-secondary btn-edit">編輯</button>
         <button class="btn btn-sm btn-outline-danger btn-delete">刪除</button>
