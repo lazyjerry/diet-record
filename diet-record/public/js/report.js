@@ -52,7 +52,7 @@ async function loadStats(range = 'today', start = '', end = '') {
       labels,
       datasets: [
         {
-          label: '熱量 (千卡)',
+          label: '熱量 (Kcal)',
           data: data.map(d => d.calories),
           borderColor: '#dc3545',
           tension: 0.3
@@ -110,7 +110,7 @@ async function loadStats(range = 'today', start = '', end = '') {
         } 
       },
       scales: {
-        y: { beginAtZero: true, title: { display: true, text: '克 / 千卡' } },
+        y: { beginAtZero: true, title: { display: true, text: '克 / Kcal' } },
         x: { title: { display: true, text: '日期' } }
       }
     }
@@ -309,7 +309,7 @@ async function loadStats(range = 'today', start = '', end = '') {
     ]
     const unitMap = {
       grains: '份', protein: '份', vegetables: '份', fruits: '份', dairy: '份', fats: '份',
-      carbs: '克', proteins: '克', fats_total: '克', calories: '千卡'
+      carbs: '克', proteins: '克', fats_total: '克', calories: 'Kcal'
     }
 
     const [group1Body, group2Body] = statsTable.querySelectorAll('tbody')
