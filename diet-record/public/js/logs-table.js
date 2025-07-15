@@ -94,9 +94,9 @@ function renderSummaryRow(logs) {
       <td>${Math.round(summary.fats_total)}</td>
       <td></td>
     </tr>
-    <tr class="table-info">
+    <tr class="table-active">
       <td>平均</td>
-      <td></td>
+      <td>共 ${count} 筆</td>
       <td>${avg.grains.toFixed(1)}</td>
       <td>${avg.protein.toFixed(1)}</td>
       <td>${avg.vegetables.toFixed(1)}</td>
