@@ -49,6 +49,5 @@ td:first-child,
 th:first-child {
   position: sticky;
   left: 0;
-  background: white;
   z-index: 2;
 }
