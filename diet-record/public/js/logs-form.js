@@ -109,6 +109,7 @@ export function openEditModal(data) {
 
 // 綁定表單送出事件
 export function bindFormSubmit() {
+  
   form.addEventListener('submit', async (e) => {
     e.preventDefault()
 

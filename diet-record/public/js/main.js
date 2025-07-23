@@ -25,6 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
   window.openLogModal = openLogModal
   window.openEditModal = openEditModal
 
+  // 給表單輸入框加上 Enter 鍵換行功能
+  document.querySelectorAll('.enter-next').forEach((input, index, list) => {
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // ⚠️ 防止預設的 submit 行為
+
+      // 尋找下一個可 focus 的輸入欄位
+      const next = list[index + 1];
+      if (next) next.focus();
+    }
+  });
+});
 
   // 在全站只要跑一次就好
   document.addEventListener('hide.bs.modal', e => {
