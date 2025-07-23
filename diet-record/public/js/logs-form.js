@@ -14,23 +14,28 @@ let tagifyInstance
 function initTagify() {
   const input = document.getElementById('description')
   if (!input) return
-  if (tagifyInstance) tagifyInstance.destroy()
+ 
+  // 只要執行一次就好
+  if (!tagifyInstance){
+    // 從 localStorage 取得建議 tags（最多 100 筆）
+    const stored = localStorage.getItem('tagSuggestions')
+    const suggestions = stored ? JSON.parse(stored) : []
 
-  // 從 localStorage 取得建議 tags（最多 100 筆）
-  const stored = localStorage.getItem('tagSuggestions')
-  const suggestions = stored ? JSON.parse(stored) : []
-
-  tagifyInstance = new Tagify(input, {
-    delimiters: '。，,\n',
-    trim: true,
-    dropdown: {
-      enabled: 1,
-      maxItems: 10,
-      position: "text",
-      classname: "tags-look",
-    },
-    whitelist: suggestions
-  })
+    tagifyInstance = new Tagify(input, {
+      delimiters: '。，,\n',
+      autoFocus : false,  
+      trim: true,
+      dropdown: {
+        enabled: 1,
+        maxItems: 10,
+        position: "text",
+        classname: "tags-look",
+      },
+      whitelist: suggestions
+    })
+    // 保險起見，強制失焦
+    tagifyInstance.DOM.input.blur();
+  }
 }
 
 function populateDescriptionTags(raw = '') {
@@ -70,6 +75,7 @@ function setLogModalHint() {
 
 // 開啟 modal：新增模式
 export function openLogModal() {
+  
   modalTitle.textContent = '➕ 新增紀錄'
   editLogId = null
   form.reset()

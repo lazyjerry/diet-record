@@ -24,6 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
   window.openUserModal = bindUserModal
   window.openLogModal = openLogModal
   window.openEditModal = openEditModal
+
+
+  // 在全站只要跑一次就好
+  document.addEventListener('hide.bs.modal', e => {
+    const modalEl = e.target;
+
+    // 若焦點還在對話框內，先移走；避免 aria-hidden 被瀏覽器擋下來
+    if (modalEl.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  });
 })
 
 if ('serviceWorker' in navigator) {

@@ -404,13 +404,19 @@
 								參考資料
 							</button>
 							<button
-								type="submit"
+								type="button"
 								class="btn btn-primary"
+								id="submitLogButton"
 							>
 								💾 儲存
 							</button>
 						</div>
 					</form>
+					<script>
+						document.getElementById("submitLogButton").addEventListener("click", () => {
+							document.getElementById("logForm").submit(); // 僅此一條路可送出
+						});
+					</script>
 				</div>
 			</div>
 		</div>
